@@ -4,6 +4,8 @@ from flwr.common import NDArrays
 from torch.optim.optimizer import Optimizer, required
 
 import torch
+
+
 class ProxSGD(Optimizer):  # pylint: disable=too-many-instance-attributes
     """Optimizer class for FedNova that supports Proximal, SGD, and Momentum updates.
 
@@ -24,18 +26,19 @@ class ProxSGD(Optimizer):  # pylint: disable=too-many-instance-attributes
     """
 
     def __init__(  # pylint: disable=too-many-arguments
-        self,
-        params,
-        ratio: float,
-        gmf=0,
-        mu=0,
-        lr=required,
-        momentum=0,
-        dampening=0,
-        weight_decay=0,
-        nesterov=False,
-        variance=0,
+            self,
+            params,
+            ratio: float,
+            gmf=0,
+            mu=0,
+            lr=required,
+            momentum=0,
+            dampening=0,
+            weight_decay=0,
+            nesterov=False,
+            variance=0,
     ):
+        """ constructor class for ProxSGD"""
         self.gmf = gmf
         self.ratio = ratio
         self.momentum = momentum
@@ -87,9 +90,6 @@ class ProxSGD(Optimizer):  # pylint: disable=too-many-instance-attributes
                     d_p.add_(p.data, alpha=weight_decay)
 
                 param_state = self.state[p]
-
-                # if 'old_init' not in param_state:
-                # 	param_state['old_init'] = torch.clone(p.data).detach()
 
                 local_lr = group["lr"]
 

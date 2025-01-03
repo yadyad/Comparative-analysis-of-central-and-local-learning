@@ -3,6 +3,10 @@ from tkinter import filedialog
 import matplotlib.pyplot as plt
 import json
 
+"""
+CODE FOR GENERATING f1-SCORE VS ROUNDS
+    for multiple plots
+"""
 def browse_files_and_plot():
     file_paths = filedialog.askopenfilenames(filetypes=[("JSON Files", "*.json")])
     if file_paths:

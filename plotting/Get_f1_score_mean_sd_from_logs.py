@@ -8,6 +8,10 @@ import json
 from math import inf  # Import 'inf' for eval context
 
 
+
+"""
+    CODE TO GET F1-SCORE;FPR;RECALL FROM LOGS
+"""
 # Function to browse and select files
 def browse_files():
     root = Tk()

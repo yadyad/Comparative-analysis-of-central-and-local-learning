@@ -5,6 +5,9 @@ from collections import defaultdict
 from tkinter import Tk, filedialog
 from tkinter.filedialog import askopenfilenames, askdirectory
 
+"""
+    CODE TO GENERATE F1-SCORE;FPR;RECALL BAR PLOT
+"""
 # Function to select multiple files
 def select_files():
     Tk().withdraw()  # Prevent the Tkinter root window from appearing

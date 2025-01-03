@@ -12,8 +12,6 @@ from pytorch_image_classification.TestStandardDS.baseline_dataset_preparation im
 from pytorch_image_classification.argument import argument
 from pytorch_image_classification.custom_dataset_pytorch import CustomDatasetPytorch
 from pytorch_image_classification.data_preparation_pytorch import data_preparation
-from sklearn.metrics import roc_curve, auc
-import matplotlib.pyplot as plt
 
 from results_logging import ResultsLogger, logging_setup
 from retrieve_data import Retrieve
@@ -23,10 +21,10 @@ import logging
 
 def prepare_global_test_loader(test_parts):
     """
-        here all the individual test loader for each parts and concatenated into a single dataframe
+        here all the individual test loader for each part and concatenated into a single dataframe
         and then a Dataloader is prepared from it.
-    :param test_parts:
-    :return:
+    :param test_parts: data frame to be concatenated.
+    :return: concatenated  dataloader
     """
     test = pd.concat(test_parts)
     test_dataset = CustomDatasetPytorch(test)
@@ -35,6 +33,15 @@ def prepare_global_test_loader(test_parts):
 
 
 def print_confusion_matrix(model, dataloader, machine=None, comm_round=None, epoch=None, filepath=None):
+    """
+        function used to plot confusion matrix
+    :param model: model with which the confusion matrix is to be plotted
+    :param dataloader: the data which the model is to be evaluated on
+    :param machine: if provided will be added to label, the id of client
+    :param comm_round: if provided will be added to label, the current communication round
+    :param epoch: if provided will be added to label, the current epoch
+    :param filepath: the location to which the plot will be stored if given
+    """
     if type(dataloader) == type([1]):
         pass
     else:
@@ -56,26 +63,26 @@ def print_confusion_matrix(model, dataloader, machine=None, comm_round=None, epo
     tar = tar.cpu()
     if cfg.classification_type == "binary":
         predicted = torch.round(torch.sigmoid(pred_label)).squeeze()
+        # plot confusion matrix and ROC curve is Binary
         ut.print_confusion_matrix_binary(predicted, tar.squeeze(), filepath=filepath,machine= machine, comm_round=comm_round,epoch=epoch)
         ut.plot_area_under_curve(tar.squeeze(), torch.sigmoid(pred_label).squeeze(), filepath, machine, comm_round, epoch)
     else:
+        # plot confusion matrix if multiclass classification
         ut.print_confusion_matrix(torch.argmax(pred_label, 1), tar.data,filepath)
 
 
 def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu", calc_all=False,
                      with_threshold_opt=False, best_threshold=0.5):
     """
-        Used to calculate performance metrics of the model
-    :param val_losses:
-    :param filepath:
-    :param with_threshold_opt: If threshold optimization is to be done on validation set
+        Used to calculate performance metrics of the model on given data loader
+    :param best_threshold: if given all the metric calculation will be done with this confidence value
+    :param with_threshold_opt: If threshold optimization is to be done on validation set True
     :param model: machine learning model for calculating metric
     :param dataloader: Data for evaluating the model
     :param get_confusion_matrix: to return confusion matrix, if true returns FScore and confusion matrix
-    :param moon_model:
     :param device: cpu or cuda
     :param calc_all: if True calculates metrics like FScore , fpr, tps and threshold and returns a dictionary
-    :return: either (fscore, confusion_matrix) or {f1Score, fpr, tpr, threshold}
+    :return: either (f1-score, confusion_matrix) or {f1Score, fpr, tpr, threshold}
     """
     global conf_matrix
     cfg = Configuration()
@@ -84,9 +91,6 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
     utility = ut.utility()
     was_training = False
     metrics = None
-    # if model.training:
-    #     model.eval()
-    #     was_training = True
 
     true_labels_list, pred_labels_list = np.array([]), np.array([])
 
@@ -98,8 +102,11 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
         model = model.cuda()
     correct, total = 0, 0
     with torch.no_grad():
+        # iterate throught the data loader
         for tmp in dataloader:
+            # iterate through the batches in data loader
             for batch_idx, (x, target) in enumerate(tmp):
+                # evaluating the model on given data loader
                 x, target = x.to(device), target.to(device, dtype=torch.int64)
                 out = model(x)
                 criterion = utility.get_Criterion()
@@ -107,6 +114,8 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
                 out = out.cpu()
                 target = target.cpu()
                 if cfg.classification_type == "binary":
+                    # performs sigmoid activation and then find binary prediction
+                    # based on the best_threshold value provided
                     predicted = torch.sigmoid(out)
                     predicted = (predicted > best_threshold).int()
                     if with_threshold_opt:
@@ -116,18 +125,24 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
                     pred_label = predicted.squeeze()
                     total += x.data.size()[0]
                     tar = target.squeeze()
+
+                    # calculating the different metrics for binary classification result from model
                     metrics = ut.calculate_metrics_binary(target.squeeze(), predicted.squeeze(), beta=cfg.metrics.beta)
                     F1Score = metrics['FScore']
                 else:
                     _, pred_label = torch.max(out.data, 1)
                     total += x.data.size()[0]
                     tar = torch.argmax(target.data, dim=1)
+
+                    # calculating multiclass f1 score
                     F1Score = multiclass_f1_score(torch.argmax(out, 1), torch.argmax(target.data, 1),
                                                   num_classes=cfg.no_of_classes
                                                   , average="weighted")
 
                     metrics = {'FScore': F1Score.numpy().tolist()}
                 # correct += (pred_label == tar).sum().item()
+
+                # saving the list of probabilities
                 if device == "cpu":
                     pred_labels_list = np.append(pred_labels_list, pred_label.numpy())
                     true_labels_list = np.append(true_labels_list, tar.numpy())
@@ -136,6 +151,8 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
                     true_labels_list = np.append(true_labels_list, tar.cpu().numpy())
                 loss = criterion(out, target.to(torch.float32))
                 metrics['loss'] = loss.item()
+
+    # gets the confusion matrix
     if get_confusion_matrix:
         conf_matrix = confusion_matrix(true_labels_list, pred_labels_list)
 
@@ -145,6 +162,7 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
     if get_confusion_matrix:
         return F1Score, conf_matrix
 
+    # calculating optimal threshold from saved probabilities if with_threshold_opt is true
     if with_threshold_opt and cfg.classification_type == "binary":
         probabilities = np.array(probabilities)
         true_labels = np.array(true_labels)
@@ -160,6 +178,11 @@ def compute_accuracy(model, dataloader, get_confusion_matrix=False, device="cpu"
 
 
 def calculate_best_threshold_global(metrics):
+    """
+        averaging the thresholds from different client to obtain global threshold
+    :param metrics: dictionary containing performance metrics from different clients.
+    :return: optimum confidence value of global model
+    """
     threshold = 0
     for metric in metrics:
         threshold += metric['best_threshold']
@@ -190,14 +213,26 @@ def calculate_class_distribution(dataloaders):
 
 
 class FederatedServer(ABC):
-
-    def __init__(self, identifier=None,iteration=None):
+    """
+        abstract class for simulating federated learning server
+    """
+    def __init__(self, identifier=None, iteration=None):
+        """
+            constructor for federated learning server, performing data preprocessing steps
+            and making data available for child classes.
+        :param identifier: unique identifier for this federated learning experiment
+        :param iteration: iteration number for this experiment run
+        """
         self.send_slow_rate = 0.0
         self.train_slow_rate = 0.0
+        # initialising configuration class
         self.cfg = Configuration()
         self.augment = None
+        # initialising retrieve class
         self.retrieve = Retrieve()
+        # initialising data preprocessing class
         self.preprocess = data_preparation()
+        # initialising utility class
         self.utility = ut.utility()
         self.train_slow_clients = []
         self.send_slow_clients = []
@@ -206,21 +241,31 @@ class FederatedServer(ABC):
         self.global_metrics = []
         self.train_metrics_dict_list = []
         self.args = argument()
+        # saving global model for scaffold aggregation
         self.model_global_scaffold = self.utility.get_Model()
+        # retrieve data frame from save files
         self.train_parts, self.test_parts, self.val_parts = self.retrieve.retrieve_dataframe(iteration)
         classname = self.__class__.__name__
+        # initialising results logger class
         self.log = ResultsLogger(self.cfg, classname, identifier)
+        # setting up logger to save logs to file
         logging_setup(self.log.logging_path, logging)
+
         if not self.cfg.use_standard_dataset:
+            # preparing global test loader and dataset
             self.test_dataset, self.global_test_loader = prepare_global_test_loader(self.test_parts)
+            # preparing global train loader and dataset
             self.train_dataset, self.global_train_loader = prepare_global_test_loader(self.train_parts)
+            # preparing local train, test and validation data loader
             self.train_parts, self.test_parts, self.val_parts = self.preprocess.prepare_loaders_local_learning(
                 self.train_parts,
                 self.test_parts,
                 self.val_parts)
         else:
+            # preparing data loaders from standard dataset
             self.train_parts, self.test_parts, self.val_parts, self.global_train_loader, self.global_test_loader, self.global_val_loader = prepare_CIFAR10_dataloader()
         if self.cfg.plot.plot_stat_data_loader:
+            # plotting the label distribution of data amoung different clients.
             ut.plot_stat(self.train_parts, "Train dataset", self.cfg.classification_type, filepath=self.log.logging_path)
             ut.plot_stat(self.test_parts, "test dataset", self.cfg.classification_type, filepath=self.log.logging_path)
             ut.plot_stat(self.val_parts, "validation dataset", self.cfg.classification_type, filepath=self.log.logging_path)
@@ -228,8 +273,8 @@ class FederatedServer(ABC):
     def get_netdata_idx_map(self):
         """
             prepare a dictionary with key net_id and value train_dataframe
-            each entry in the dictionary is a train data for the client
-        :return:
+            each entry in the dictionary is a train data for each client
+        :return: dictionary with key net_id and value train_dataframe
         """
         return {i: self.train_parts[i] for i in range(self.cfg.no_of_local_machines)}
 
@@ -237,9 +282,9 @@ class FederatedServer(ABC):
         """
             prepare a dictionary with key net_id and value the net used for local training in the machines.
         :param is_control_variate: initialiseing for control variate in scaffold if true
-        :param types:
+        :param types: local ,if: client net is being prepared else global model intialisation
         :return:
-            nets - dictionary
+            nets: dictionary
             model_meta_data: information about layers in the model
             layer_type: what type of layers are included in the model
         """
@@ -258,6 +303,11 @@ class FederatedServer(ABC):
         return nets, model_meta_data, layer_type
 
     def select_slow_clients(self, slow_rate=0.0):
+        """
+            initialise clients where training is slower
+        :param slow_rate: the rate of clients from total which is supposed to be slow
+        :return: clients with slow_client is True
+        """
         slow_clients = [False for i in range(self.cfg.no_of_local_machines)]
         idx = [i for i in range(self.cfg.no_of_local_machines)]
         idx_ = np.random.choice(idx, int(slow_rate * self.cfg.no_of_local_machines))
@@ -267,6 +317,11 @@ class FederatedServer(ABC):
         return slow_clients
 
     def set_clients(self, clientObj):
+        """
+            function used by scaffold aggregation server to set the model for each client. as we are not enabling
+            different client to be slow all the model is initialised with same global model
+        :param clientObj:
+        """
         for i, train_slow, send_slow in zip(range(self.cfg.no_of_local_machines), self.train_slow_clients,
                                             self.send_slow_clients):
             train_data = self.train_parts[i]
@@ -275,12 +330,19 @@ class FederatedServer(ABC):
             self.clients.append(client)
 
     def set_slow_clients(self):
+        """
+            used by scaffold aggregation server to set the slow client if needed
+        """
         self.train_slow_clients = self.select_slow_clients(
             self.train_slow_rate)
         self.send_slow_clients = self.select_slow_clients(
             self.send_slow_rate)
 
     def select_clients(self):
+        """
+            selecting clients for training during current communication round.
+        :return: selected clients and array containing selected client index
+        """
         arr = np.arange(self.cfg.no_of_local_machines)
         np.random.shuffle(arr)
         selected = arr[:int(self.cfg.no_of_local_machines * self.cfg.federated_learning.sample)]

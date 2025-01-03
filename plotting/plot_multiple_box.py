@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import tkinter as tk
 from tkinter import filedialog
 
+"""
+CODE TO GENERATE MULTIPLE BOX PLOT FOR FPR
+"""
+
 # Open file selection window
 def select_files():
     root = tk.Tk()

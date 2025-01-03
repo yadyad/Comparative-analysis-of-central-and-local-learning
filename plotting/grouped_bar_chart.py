@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+"""
+CODE TO GENERATE GROUPED BAR CHART FOR FPR:F1SCORE:RECALL
+"""
 # Function to load JSON data from a file
 def load_json_file():
     file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])

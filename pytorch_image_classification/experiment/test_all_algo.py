@@ -11,6 +11,13 @@ from pytorch_image_classification.local_learning_pytorch import LearningLocal
 start_time = datetime.now()  # Format the date and time as a string
 date_time_str = start_time.strftime("%Y-%m-%d%H-%M-%S")
 cumulative_log_path = []
+"""
+    code for running experiment on every learning pipeline,
+    first dataset preparation and preprocessing is done and on the same data
+    each learning pipeline is run
+    sd_iter: number of time experiment will be repeated
+    iteration: which iteration is currently based on this the data will be fetched from file
+"""
 for i in range(1):
     log_paths_per_iteration = []
 

@@ -26,17 +26,28 @@ import numpy as np
 
 
 class FedNovaServerNew(FederatedServer):
+    """
+        class containing functions to simulate FedNova aggregation strategy
+    """
     def __init__(self, identifier=None, iteration=None):
+        """
+            constructor for FedNovaServerNew
+        :param identifier: unique identifier for experiment run
+        :param iteration: value of iteration for the current experiment
+        """
         super().__init__(identifier, iteration)
         self.key_with_gradients = []
+        # copy parameter value of model
         ndarrays = [
             layer_param.cpu().numpy()
             for _, layer_param in self.utility.get_Model().state_dict().items()
         ]
-        # initialising parameters
+        # initialising parameters, this to be updated later
         self.parameters = ndarrays_to_parameters(ndarrays)
+        # starting parameters
         self.initial_parameters = copy.deepcopy(self.parameters)
         self.args = argument()
+        # global model state dict
         self.global_parameters = self.utility.get_Model('cpu').state_dict()
         self.global_momentum_buffer = []
         self.index_with_gradients = []
@@ -44,12 +55,26 @@ class FedNovaServerNew(FederatedServer):
         self.start_aggregation(self.args, self.get_netdata_idx_map())
 
     def get_init_nets(self, args):
+        """
+            initialising global model and local models
+        :param args: class containing configuration details for federated learning
+        :return: global model and list of local models
+        """
         nets, local_model_meta_data, layer_type = self.init_nets()
         global_models, global_model_meta_data, global_layer_type = self.init_nets("global")
         global_model = global_models[0]
         return global_model, nets
 
     def initialize_nets(self, args, global_model, nets, round, selected):
+        """
+            initialises local model based on global model
+        :param args: class containing configuration details for federated learning
+        :param global_model: global model shared by the clients.
+        :param nets: local client models
+        :param round: communication round
+        :param selected: selected client during current training round
+        :return: list of local model
+        """
         global_para = global_model.state_dict()
         if round == 0:
             if args.is_same_initial:
@@ -61,35 +86,52 @@ class FedNovaServerNew(FederatedServer):
         return nets
 
     def logging(self, global_model, train_acc):
+        """
+            function for logging results
+        :param global_model: final global model
+        :param metrics: result metrics after testing
+        """
         self.log.add_to_log(None, dict_from_conf(self.cfg))
         self.log.add_to_log(None, train_acc)
         # self.log.add_to_log(None, {key: values.tolist() for key, values in global_model.state_dict().items()})
         self.log.save_log()
 
     def start_aggregation(self, args, net_data_idx):
+        """
+            starting point of FedNova learning algorithm, the function initialises clients and sends data to client
+             and perform aggregation
+        :param args: class containing configuration parameters
+        :param net_dataidx_map: dictionary containing datapoint and key client_id
+        """
         test_Metrics = None
         print("fitting server")
 
         print("Initializing nets")
         global_model, nets = self.get_init_nets(args)
-
+        # iterating over communication round
         for round in range(args.comm_round):
             print("in comm round:" + str(round))
+
             selected = np.arange(args.n_parties)
-
+            # initialising local models
             nets = self.initialize_nets(args, global_model, nets, round, selected)
-
+            # sending models to local training
             res_fit = self.local_train_net_fednova(nets, selected, global_model, args, self.get_netdata_idx_map(),
                                                    round,
                                                    test_dl=self.global_test_loader, device=self.cfg.device)
 
             if res_fit is not None:
                 parameters_prime, fit_metrics, _ = res_fit  # fit_metrics_aggregated
+                # update parameters
                 if parameters_prime:
                     self.parameters = parameters_prime
+            # update global model
             global_model.load_state_dict(self.global_parameters)
+
             if len(self.metrics) > 0:
+                # calculate optimum confidence value for global model
                 best_threshold = calculate_best_threshold_global(self.metrics)
+                # calculate performance metrics on train and test data loader
                 train_F = compute_accuracy(global_model, self.global_train_loader, device=self.cfg.device,
                                            best_threshold=best_threshold)
                 test_Metrics = compute_accuracy(global_model, self.global_test_loader, device=self.cfg.device,
@@ -99,6 +141,8 @@ class FedNovaServerNew(FederatedServer):
                 test_Metrics = compute_accuracy(global_model, self.global_test_loader, device=self.cfg.device,
                                                 calc_all=True)
             self.global_metrics.append(test_Metrics)
+
+            #print and plot results
             print_confusion_matrix(global_model, self.global_test_loader,filepath=self.log.logging_path)
             print('>> Global Model Train F1Score:', train_F)
             print('>> Global Model Test Metrics:', test_Metrics)
@@ -112,6 +156,18 @@ class FedNovaServerNew(FederatedServer):
 
     def local_train_net_fednova(self, nets, selected, global_model, args, net_dataidx_map, round, test_dl=None
                                 , device="cpu"):
+        """
+            simulate the training on one client after other
+        :param nets: local model for each client
+        :param selected:  selected for the current round of training
+        :param global_model: global model of FedProx server
+        :param args: class containing federated learning configuration
+        :param net_dataidx_map: dictionary containing datapoint and key client_id
+        :param test_dl: test data loader
+        :param device: device where the learning should be performed cpu or gpu
+        :return: list of client model
+        :return:
+        """
         avg_acc = 0.0
         size_dataset_per_client = [len(i.dataset) for i in self.train_parts]
         results = []
@@ -134,6 +190,7 @@ class FedNovaServerNew(FederatedServer):
             train_dl_local, test_dl_local = self.train_parts[net_id], self.test_parts[net_id]
             n_epoch = self.cfg.federated_learning.local_epochs
 
+            #training local models
             loss_list, res, min_metrics, val_metrics = client.train_local(net_id, net, global_model, train_dl_local, test_dl,
                                                              n_epoch, self.cfg.federated_learning.learning_rate, None,
                                                              None, None, None, device=device, comm_round=round,
@@ -147,12 +204,14 @@ class FedNovaServerNew(FederatedServer):
             self.metrics.append(min_metrics)
             dict_train_metrics[net_id] = val_metrics
         self.train_metrics_dict_list.append(dict_train_metrics)
+        # calculating weighted average result for each round
         weighted_average = ut.weighted_average_test_score(test_acc_list, test_size_list)
         avg_acc /= len(selected)
         print("avg test acc %f" % avg_acc)
         print(f"average weighted FScore {weighted_average}")
         self.find_param_with_gradient(nets)
 
+        # aggregate result from clients
         aggregated_result: Tuple[
             Optional[Parameters],
             Dict[str, Scalar],
@@ -161,6 +220,11 @@ class FedNovaServerNew(FederatedServer):
         return parameters_aggregated, metrics_aggregated, results
 
     def find_param_with_gradient(self, nets):
+        """
+            function to find parameter whose gradients are calculated during
+            optimization step
+        :param nets: local model of clients
+        """
         state_dict = nets[0].state_dict(keep_vars=True)
         j = 0
         for key, val in state_dict.items():
@@ -235,11 +299,18 @@ class FedNovaServerNew(FederatedServer):
                 self.global_parameters[self.key_with_gradients[i]] -= layer_cum_grad
 
     def test(self, model, test_loader, round, device, parameter) -> Tuple[float, Dict[str, float]]:
+        """
+            function for evaluating a model
+            not used
+        :param model:
+        :param test_loader:
+        :param round:
+        :param device:
+        :param parameter:
+        :return:
+        """
         criterion = nn.CrossEntropyLoss()
 
-        # load the model parameters
-        # params_dict = zip(model.state_dict().keys(), parameter)
-        # state_dict = OrderedDict({k: torch.Tensor(v) for k, v in params_dict})
         model.load_state_dict(parameter)
 
         model = model.to(device)
@@ -261,6 +332,14 @@ class FedNovaServerNew(FederatedServer):
 
 
 def comp_accuracy(output, target, topk=(1,)):
+    """
+        function for calculating topk accuracy
+        function is not used
+    :param output:
+    :param target:
+    :param topk:
+    :return:
+    """
     cfg = Configuration()
     tar = torch.argmax(target, dim=1)
 
@@ -327,14 +406,11 @@ def ndarray_to_bytes(ndarray: NDArray) -> bytes:
 
 
 def plot_loss(loss_each_net, round):
-    # epochs = len(loss_each_net[0])
-    # max_epoch = [max(len(loss_per_client), epochs) for loss_per_client in loss_each_net]
-    # epochs = len(loss_each_net[0])
-    #
-    # # Create a range for epochs
-    # epoch_range = list(range(1, max_epoch + 1))
-
-    # Plot each model's loss
+    """
+        function to plot loss of each client over round
+    :param loss_each_net:
+    :param round:
+    """
     for i, model_loss in enumerate(loss_each_net):
         plt.plot(list(range(1, len(model_loss) + 1)), model_loss, label=f'Model {i + 1}')
 

@@ -4,6 +4,9 @@ import numpy as np
 from tkinter import Tk, filedialog
 
 # Function to browse and select the log file
+"""
+CODE TO GET F1-SCORE PER ROUND FROM LOG FILES
+"""
 def select_file():
     root = Tk()
     root.withdraw()  # Hide the main window

@@ -5,10 +5,17 @@ from utility import utility
 
 
 class FederatedClient(ABC):
+    """
+        abstract class for simulating federated learning client
+    """
     def __init__(self):
+        """
+            constructor for federated client
+        """
         super().__init__()
         self.cfg = Configuration()
         self.train_slow = False
+        # initialising utility class
         self.ut = utility()
         self.logging_path = None
 

@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from tkinter import Tk
 from tkinter.filedialog import askopenfilenames, asksaveasfilename
+"""
+    CODE TO PLOT ROC CURVE FROM DATA SAVED
+"""
 
 # Set global font settings to Arial with font size 10
 rcParams['font.family'] = 'Arial'

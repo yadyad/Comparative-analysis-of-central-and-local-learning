@@ -4,6 +4,9 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 
+"""
+CODE TO COMPUTE AVERAGE METRICS ACROSS ALL CLIENTS AND ROUNDS
+"""
 # Function to compute overall mean and standard deviation
 def compute_overall_stats(metric_data):
     mean_values = [item['mean'] for item in metric_data]

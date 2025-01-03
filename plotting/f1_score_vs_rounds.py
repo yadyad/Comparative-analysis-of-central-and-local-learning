@@ -6,6 +6,11 @@ import numpy as np
 import os
 
 
+"""
+CODE TO GENERATE f1-SCORE VS ROUNDS PLOTS 
+    for one file
+"""
+
 # Function to open file dialog and select files
 def select_files():
     root = tk.Tk()
