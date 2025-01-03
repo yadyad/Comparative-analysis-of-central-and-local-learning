@@ -1,0 +1,105 @@
+batch_size: 16
+no_of_classes: 16
+local:
+  epoch: 2
+central:
+  epoch: 2
+use_standard_dataset: false
+sd_iter: 1
+
+background_image_class_name: Background Image
+dataset_feature_name: source
+image_feature_name: image
+image_index_feature: imageIndex
+target_feature_name: errorClassCombined
+target_feature_number: classNumber
+
+classification_type: binary #binary, multiclass
+binary:
+  activation: sigmoid
+  loss: binary_crossentropy
+positive_classes: -good
+multi_class:
+  activation: softmax
+  loss: categorical_crossentropy
+
+
+lr: 0.02
+mu: 0.01
+rho: 0.9
+weight_decay: 0.001
+metrics:
+  beta: 1
+  name: FBetaScore
+  threshold: 0.5
+  min_threshold: 0.01
+model: resnet
+optimizer: SGD
+
+
+device: cpu  #cuda or cpu
+separation_type: random # split data for each client ::: random, feature
+no_of_local_machines: 2
+shuffle_train: false
+shuffle_val: false
+random_oversampling: true
+weighted_sampling: false
+logging: true
+
+
+
+plot:
+  plot_stat_data_loader: true
+
+#constants
+sampling_type: random
+sampling_type_weighted: weighted
+class_names_dict:
+  0: Pin fehlt
+  1: Pseudofehler
+  2: THT Bauteil Montage falsch
+  3: THT Bauteil falsch
+  4: THT Bauteil fehlt
+  5: THT Bauteil liegt nicht auf
+  6: THT Bauteil mechan beschaedigt
+  7: THT Bauteil verpolt
+  8: THT Bauteil versetzt
+  9: THT Loetbruecke
+  10: THT Loetdurchstieg mangelhaft
+  11: THT Loetst.Form mangelhaft
+  12: THT Loetstelle offen
+  13: THT Lotkugeln
+  14: Background Image
+  15: good
+class_number_dict:
+  Background Image: 14
+  Pin fehlt: 0
+  Pseudofehler: 1
+  THT Bauteil Montage falsch: 2
+  THT Bauteil falsch: 3
+  THT Bauteil fehlt: 4
+  THT Bauteil liegt nicht auf: 5
+  THT Bauteil mechan beschaedigt: 6
+  THT Bauteil verpolt: 7
+  THT Bauteil versetzt: 8
+  THT Loetbruecke: 9
+  THT Loetdurchstieg mangelhaft: 10
+  THT Loetst.Form mangelhaft: 11
+  THT Loetstelle offen: 12
+  THT Lotkugeln: 13
+  good: 15
+Number_of_classes: 16
+data_augmentation: 
+  C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/augmentation_configuration.yaml
+federated_learning: 
+  C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/federatedlearning_configuration.yaml
+fetch_image: C:/Users/yadhu/Desktop/thesis_code/image-classification-master/save_dataframe/
+image: 
+  C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/image_configuration.yaml
+local_learning: 
+  C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/learning_configuration.yaml
+splitting: 
+  C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/splitting_configuration.yaml
+
+paths:
+  logging_path: C:/Users/yadhu/Desktop/thesis_code/Logs

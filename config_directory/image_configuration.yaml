@@ -1,0 +1,31 @@
+
+base_path:
+  - owner: siemens
+    path: C:/Users/yadhu/PycharmProjects/Thesis/siemensamberg_2022_64x64/exactInspImage/
+    excel_path: C:/Users/yadhu/PycharmProjects/Thesis/siemensamberg_2022_64x64/siemensamberg_2022.xlsx
+  - owner: sehoaoi
+    path: C:/Users/yadhu/PycharmProjects/Thesis/sehoaoi_2021_64x64/exactInspImage/
+    excel_path: C:/Users/yadhu/PycharmProjects/Thesis/sehoaoi_2021_64x64/sehoaoi_2021.xlsx
+
+
+size_x: 64
+size_y: 64
+image_feature_name: "image"
+column_drop: ['InspID', 'jobCenterX', 'jobCenterY', 'sizeX', 'sizeY', 'typ', 'redUsed', 'blueUsed', 'rvl',
+            'bvl', 'rvh', 'bvh', 'rpl', 'bpl', 'rph', 'bph', 'ergRed', 'ergBlue', 'errTextRed', 'errTextBlue',
+            'histoRed', 'histoBlue', 'inspectorName', 'errorClass', 'orgTop', 'orgLeft', 'pinName',
+            'inspectorUuid', 'errorClassText', 'layerLevel', 'layerSublevel', 'cameraName', 'pseudoError',
+            'imageFileName', 'inspBad', 'inspRedBad', 'inspBlueBad', 'errText', 'is_good']
+
+column_selected:
+  - errorClassCombined
+  - imageIndex
+  - progId
+
+filter_rows:
+  - column_name: errText
+    key_to_filter: Pin
+
+remove_rows:
+  - column_name: errorClassText
+    key_to_remove: AOI Gut Pruefung

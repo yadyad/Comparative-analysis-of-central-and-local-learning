@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/sehoaoi_2021_64x64" />
+      <excludeFolder url="file://$MODULE_DIR$/sehoaoi_labeled" />
+      <excludeFolder url="file://$MODULE_DIR$/siemens_amberg_labeled" />
+      <excludeFolder url="file://$MODULE_DIR$/siemensamberg_2022_64x64" />
+    </content>
+    <orderEntry type="jdk" jdkName="Thesis" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

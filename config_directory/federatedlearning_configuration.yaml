@@ -1,0 +1,21 @@
+validation_size: 0.2
+test_ratio_per_client: 0.2
+random_seed: 40
+batch_size: 20
+batch_size_val: 128
+local_epochs: 2
+learning_rate: 0.01
+communication_rounds: 2
+
+var_min_epochs: 1
+var_max_epochs: 2
+seed: 40
+var_local_epochs: True
+gmf: 0.01
+global_lr: 0.1
+learning_rate_decay_gamma: False
+
+is_same_initial: True
+sample: 1   #ratio of clients sampled
+
+

@@ -1,0 +1,26 @@
+Seho AI Classification Data
+seho_classes = [
+    'good',
+    'THT Loetstelle offen',
+    'THT Bauteil fehlt',
+    'Pseudofehler',
+    'THT Bauteil versetzt',
+    'THT Bauteil verpolt',
+    'THT Bauteil mechan beschaedigt',
+    'THT Bauteil Montage falsch',
+    'THT Bauteil falsch',
+    'THT Bauteil liegt nicht auf',
+    'THT Loetdurchstieg mangelhaft',
+    'Pin fehlt',
+    'THT Loetbruecke',
+    'THT Lotkugeln',
+    'THT Loetst.Form mangelhaft']
+
+Siemens AI Classification Data
+siemens_classes = ['THT Loetst.Form mangelhaft',
+       'good',
+       'THT Loetbruecke',
+       'THT Loetstelle offen',
+       'THT Bauteil liegt nicht auf',
+       'THT Bauteil fehlt',
+       'THT Bauteil versetzt']

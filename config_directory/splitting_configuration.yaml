@@ -1,0 +1,5 @@
+splitting_feature_name: progId
+min_samples_per_split: 100
+train_val_test_split_ratio: 0.2
+random_state: 42
+split_type: random

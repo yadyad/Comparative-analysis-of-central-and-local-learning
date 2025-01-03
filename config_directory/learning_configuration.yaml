@@ -1,0 +1,154 @@
+fraction: 0.1
+random_state: 40
+validation_size: 0.2
+test_size: 0.2
+random_sampling: False
+feature_based_sampling: False
+
+basic_convolution:
+  in_channel: 3
+  conv_1:
+    no_of_filter: 64
+    kernel_size: 3
+    strides: 1
+    activation: relu
+
+  conv_2:
+    no_of_filter: 128
+    kernel_size: 3
+    strides: 1
+    activation: relu
+
+  conv_3:
+    no_of_filter: 256
+    kernel_size: 3
+    strides: 1
+    activation: relu
+
+  dense_1:
+    in_features: 9216
+    out_features: 120
+    activation: relu
+
+  dense_2:
+    in_features: 120
+    out_features: 84
+    activation: relu
+
+  dropout: 0.2
+
+  dense_3:
+    in_features: 84
+    activation: softmax
+  pool:
+    kernel_size: 2
+    strides: 2
+
+  learning_rate: 0.01
+  loss: categorical_crossentropy
+  metrics: accuracy
+  epochs: 10
+
+
+improved_convolution:
+  in_channel: 3
+  conv_1:
+    no_of_filter: 32
+    kernel_size: 3
+    activation: relu
+    strides: 0
+    padding: same
+
+  conv_2:
+    no_of_filter: 32
+    kernel_size: 3
+    activation: relu
+    strides: 0
+    padding: same
+
+  pool_1:
+    kernel_size: 2
+    strides: 2
+
+  conv_3:
+    no_of_filter: 64
+    kernel_size: 3
+    strides: 0
+    activation: relu
+    padding: same
+
+  conv_4:
+    no_of_filter: 64
+    kernel_size: 3
+    strides: 0
+    activation: relu
+    padding: same
+
+  pool_2:
+    kernel_size: 2
+    strides: 2
+
+  conv_5:
+    no_of_filter: 128
+    kernel_size: 3
+    strides: 0
+    activation: relu
+    padding: same
+
+  conv_6:
+    no_of_filter: 128
+    kernel_size: 3
+    strides: 0
+    activation: relu
+    padding: same
+
+  pool_3:
+    kernel_size: 2
+
+  dropout_1:
+    percent: 0.2
+
+  dense_1:
+    no_of_neurons: 8192
+    in_features: 8192
+    out_features: 120
+    activation: relu
+
+  dropout_2:
+    percent: 0.2
+
+  dense_2:
+    no_of_neurons: 16
+    in_features: 120
+    activation: softmax
+
+  learning_rate: 0.001
+  loss: categorical_crossentropy
+  metrics: F1Score
+  epochs: 16
+
+resnet_50:
+  base_model:
+    include_top: False
+    weights: imagenet
+    trainable: False
+  dense_1:
+    no_of_neurons: 1024
+    activation: relu
+  dense_2:
+    no_of_neurons: 256
+    activation: relu
+  dense_3:
+    no_of_neurons: 64
+    activation: relu
+  dense_4:
+    no_of_neurons: 16
+    activation: softmax
+  learning_rate: 0.01
+  loss: categorical_crossentropy
+  metrics: F1Score
+  epochs: 2
+
+VGG:
+  epochs: 10
+  learning_rate: 0.01

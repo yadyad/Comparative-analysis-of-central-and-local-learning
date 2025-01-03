@@ -1,0 +1,21 @@
+
+category_a:
+  subcategory_a: # Examples for selection in WandB configs
+    categorical: [a, b, c] # Selection of categorical values for WandB
+    float: [0.1, 10] # Selection of float value for WandB
+    integer: [1, 2, 3] # Selection of integer value for WandB
+
+  subcategory_b: # Examples for random search, grid search, one-factor-at-a-time selection
+    categorical: [[a; b; c], c] # Selection of categorical values with c as standard value
+    float: [[0.1, 0.2, 0.01], 0.15] # Selection of float value in an interval of 0.1 to 0.2 with value spacing of 0.01 and 0.15 as standard value
+    integer: [[10, 20], 15] # Selection of integer value in an interval of 10 to 20 with 15 as standard value
+
+  subcategory_c: # Direct selection of one value in the specified list
+    direct_selection: ((1, 2, 3), 1) # Selection of value at index 1 in the list (1, 2, 3) which is 2
+
+  subcategory_d: # Integration of sub-configs
+    sub_config: subconfig1.yaml # Parameters and values of subconfig1.yaml are integrated when loading the main config using integrate_subconfigs=True
+
+  subcategory_e: # Merging of attributes
+    parameter_1: a # If merge attributes is applied to subcategory_e, parameter_1 and parameter_2 are merged to parameter: [a, b]
+    parameter_2: b # If merge attributes is applied to subcategory_e, parameter_1 and parameter_2 are merged to parameter: [a, b]
