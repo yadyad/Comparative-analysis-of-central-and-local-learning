@@ -19,33 +19,7 @@ from retrieve_data import Retrieve
 import logging
 
 
-def print_distribution(data_loader):
-    from collections import Counter
-    import torch
-    import numpy as np
 
-    # Assuming `dataloader` is your PyTorch DataLoader
-    def get_target_distribution(dataloader):
-        # Initialize an empty list to store all targets
-        all_targets = []
-
-        # Iterate through the DataLoader
-        for _, targets in dataloader:
-            # Append targets to the list (convert to NumPy or list if necessary)
-            # Convert targets to a Python list
-            result = torch.argmax(targets, dim=1).numpy().tolist()
-            all_targets.extend(result)
-
-        # Count occurrences of each class
-        target_distribution = Counter(all_targets)
-        return target_distribution
-
-    # Example usage
-    # Assuming `dataloader` is your DataLoader
-    distribution = get_target_distribution(data_loader)
-
-    # Print or visualize the distribution
-    print("Target Distribution:", distribution)
 
 
 class CentralLearning:
@@ -122,7 +96,7 @@ class CentralLearning:
 
             train_losses.append(loss.item())
             train_correct.append(train_corr)
-
+            #validation
             with torch.no_grad():
                 for b, (X_test, y_test) in enumerate(val_loader):
                     if torch.cuda.is_available() and self.cfg.device == 'cuda':
@@ -130,10 +104,12 @@ class CentralLearning:
                         y_test = y_test.cuda()
                     y_val = model(X_test)
                     if self.cfg.classification_type == "binary":
+                        #calculating prediction based on given threshold on configuration file
                         predicted = (torch.sigmoid(y_val) > best_threshold).int()
                         y_test = y_test.cpu()
                         predicted = predicted.cpu()
                         y_val = y_val.cpu()
+                        #calculating new confidence value
                         best_threshold, best_metric = ut.optimize_threshold(torch.sigmoid(y_val).squeeze().numpy(),
                                                                             y_test.squeeze().numpy(),
                                                                             metric="fpr")
@@ -171,6 +147,7 @@ class CentralLearning:
             test_losses.append(loss.item())
             test_correct.append(train_corr)
             F1Scores.append(F1Score)
+
         ut.plot_train_val_loss(train_losses,test_losses, filepath=self.log.logging_path)
         print("Training done validation started")
         X_test, Y_test = next(iter(test_DataLoader))
@@ -178,10 +155,12 @@ class CentralLearning:
             if torch.cuda.is_available() and self.cfg.device == 'cuda':
                 X_test = X_test.cuda()
                 Y_test = Y_test.cuda()
+            #the best model from different epochs is used for testing
             y_pred_test = best_model(X_test)
             y_pred_test = y_pred_test.cpu()
             Y_test = Y_test.cpu()
             if self.cfg.classification_type == "binary":
+                #calcualting prediction based on threshold calculated during valiation
                 predicted = (torch.sigmoid(y_pred_test) > min_threshold).int()
                 metrics = ut.calculate_metrics_binary(Y_test.squeeze(), predicted.squeeze(), beta=self.cfg.metrics.beta)
                 F1Score = metrics['FScore']
@@ -195,6 +174,7 @@ class CentralLearning:
                 ut.print_confusion_matrix(torch.argmax(y_pred_test, 1), Y_test,filepath=self.log.logging_path)
             print(f'final metrics is {metrics}')
             logging.info(f'final metrics is {metrics}')
+        #saving results to logs
         if self.cfg.logging:
             self.log.add_to_log(None, dict_from_conf(self.cfg))
             self.log.add_to_log(None, metrics)
@@ -202,6 +182,9 @@ class CentralLearning:
             self.log.save_log()
 
     def standard_model(self):
+        """
+            dataset preparation for standard dataset
+        """
         data_dir = './data'  # directory of the cifar-10 data you downloaded
         transform = transforms.Compose([transforms.RandomHorizontalFlip(), transforms.ToTensor()])
         trainset = CIFAR10OneHot(root='./data', train=True, download=True,
@@ -226,6 +209,40 @@ class CentralLearning:
         # image.shape
         # length of test data
         print(len(testset))
+
+
+def print_distribution(data_loader):
+    """
+        calucate label distribution
+    :param data_loader:
+    :return:
+    """
+    from collections import Counter
+    import torch
+    import numpy as np
+
+    # Assuming `dataloader` is your PyTorch DataLoader
+    def get_target_distribution(dataloader):
+        # Initialize an empty list to store all targets
+        all_targets = []
+
+        # Iterate through the DataLoader
+        for _, targets in dataloader:
+            # Append targets to the list (convert to NumPy or list if necessary)
+            # Convert targets to a Python list
+            result = torch.argmax(targets, dim=1).numpy().tolist()
+            all_targets.extend(result)
+
+        # Count occurrences of each class
+        target_distribution = Counter(all_targets)
+        return target_distribution
+
+    # Example usage
+    # Assuming `dataloader` is your DataLoader
+    distribution = get_target_distribution(data_loader)
+
+    # Print or visualize the distribution
+    print("Target Distribution:", distribution)
 
 
 
