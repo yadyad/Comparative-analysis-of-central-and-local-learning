@@ -1,7 +1,8 @@
+# contains configuration of augmentation
 augment: True
 
 resize:
-  on: true
+  on: true  # true if resize augmentation is enables
   #size: 224  #size for resnet
   size: 256   #size for VGG
 crop_center:
@@ -9,18 +10,18 @@ crop_center:
   size: 224
 
 rotation:
-  on: true
+  on: true  # true if rotation augmentation is enables
   max_degrees: 180
   min_degrees: 0
 
 normalize:
-  on: true
+  on: true  # true if normalize augmentation is enables
   mean: [0.485, 0.456, 0.406]
   standard_deviation: [0.229, 0.224, 0.225]
 
 flipping:
-  on: true
+  on: true  # true if flipping augmentation is enables
   probability: 0.3
 mirroring:
-  on: True
+  on: True  # true if mirroring augmentation is enables
   probability: 0.3

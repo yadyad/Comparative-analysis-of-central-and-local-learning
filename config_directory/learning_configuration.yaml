@@ -1,4 +1,4 @@
-fraction: 0.1
+fraction: 0.1 # not used
 random_state: 40
 validation_size: 0.2
 test_size: 0.2
@@ -147,7 +147,7 @@ resnet_50:
   learning_rate: 0.01
   loss: categorical_crossentropy
   metrics: F1Score
-  epochs: 2
+  epochs: 10
 
 VGG:
   epochs: 10

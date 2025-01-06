@@ -1,55 +1,66 @@
-batch_size: 16
-no_of_classes: 16
+# Main configuration file
+
+batch_size: 16  # size of batch for train data loader
+no_of_classes: 16 # number of classes in multiclass classification
 local:
-  epoch: 2
+  epoch: 50 # epochs for local learning pipeline
 central:
-  epoch: 2
-use_standard_dataset: false
-sd_iter: 1
+  epoch: 50 # epochs for central learning pipeline
+use_standard_dataset: false # use data from standard dataset
+sd_iter: 5  # the number of iteration the experiment is repeated to calculate mean and standard deviation.
 
-background_image_class_name: Background Image
-dataset_feature_name: source
-image_feature_name: image
-image_index_feature: imageIndex
-target_feature_name: errorClassCombined
-target_feature_number: classNumber
 
-classification_type: binary #binary, multiclass
+# The following are constant used for name new column introduced in dataframe
+background_image_class_name: Background Image # key for relabeling background image
+dataset_feature_name: source  # name of new column created to save dataset name
+image_feature_name: image # name of ne column created to save image data
+image_index_feature: imageIndex #name of column used to save image index
+target_feature_name: errorClassCombined #name of target column
+target_feature_number: classNumber  #name of target column created for binary classification
+
+# details regarding binary classification
+classification_type: binary #binary, multiclass #decribes the type of classification done
 binary:
-  activation: sigmoid
-  loss: binary_crossentropy
-positive_classes: -good
+  activation: sigmoid # activation function used
+  loss: binary_crossentropy # loss function used
+positive_classes: -good #positive class when relabelling binary classification
+
+#details regarding multiclass classification
 multi_class:
-  activation: softmax
-  loss: categorical_crossentropy
+  activation: softmax # activation function used
+  loss: categorical_crossentropy  # loss function used
 
 
-lr: 0.02
-mu: 0.01
-rho: 0.9
-weight_decay: 0.001
+lr: 0.02  # learning rate for local and central learning
+
+mu: 0.01  #not used
+rho: 0.9  # rho value for federated learning
+weight_decay: 0.001 # weight decay for federated learning if used
+
+#details about metrics used
 metrics:
-  beta: 1
-  name: FBetaScore
-  threshold: 0.5
-  min_threshold: 0.01
-model: resnet
-optimizer: SGD
+  beta: 1 # beta value for fscore
+  name: FBetaScore  # name of metrics used
+  threshold: 0.5  #confidence value
+  min_threshold: 0.01 # maximum allowable FPR
+
+model: resnet # model used for training
+optimizer: SGD  # optimizer used for training local, central, federated averaging and fedprox
 
 
 device: cpu  #cuda or cpu
 separation_type: random # split data for each client ::: random, feature
-no_of_local_machines: 2
-shuffle_train: false
-shuffle_val: false
-random_oversampling: true
-weighted_sampling: false
-logging: true
+no_of_local_machines: 10  # number of client in local and federated learning
+shuffle_train: false  #shuffle train dataloader
+shuffle_val: false  # shuffle validation dataloader
+random_oversampling: true # true for randomoversampling
+weighted_sampling: false  # true for weighted oversampling, only one of weighted or random sampling should be set as true at a time
+logging: true # true when results need to be saved
 
 
 
 plot:
-  plot_stat_data_loader: true
+  plot_stat_data_loader: true #true for plotting label distribution of data loader
 
 #constants
 sampling_type: random
@@ -88,18 +99,24 @@ class_number_dict:
   THT Loetstelle offen: 12
   THT Lotkugeln: 13
   good: 15
-Number_of_classes: 16
-data_augmentation: 
+
+
+Number_of_classes: 16 #number of classes for multiclass classification
+
+#path of different configuration files
+data_augmentation: #path of augmentation configuration files
   C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/augmentation_configuration.yaml
-federated_learning: 
+federated_learning: #path of federated learning configuration files
   C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/federatedlearning_configuration.yaml
-fetch_image: C:/Users/yadhu/Desktop/thesis_code/image-classification-master/save_dataframe/
-image: 
+
+fetch_image: C:/Users/yadhu/Desktop/thesis_code/image-classification-master/save_dataframe/ #path of dataframe save and fetch location
+
+image: #path of image configuration files
   C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/image_configuration.yaml
-local_learning: 
+local_learning: #path of learning configuration files
   C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/learning_configuration.yaml
-splitting: 
+splitting: #path of splitting configuration files
   C:/Users/yadhu/Desktop/thesis_code/image-classification-master/config_directory/splitting_configuration.yaml
 
 paths:
-  logging_path: C:/Users/yadhu/Desktop/thesis_code/Logs
+  logging_path: C:/Users/yadhu/Desktop/thesis_code/Logs #path for saving log files

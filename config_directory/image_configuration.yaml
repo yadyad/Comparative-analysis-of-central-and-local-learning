@@ -1,31 +1,36 @@
 
 base_path:
-  - owner: siemens
+  - owner: siemens  # dataset name, path of image location and excel_path for metadata
     path: C:/Users/yadhu/PycharmProjects/Thesis/siemensamberg_2022_64x64/exactInspImage/
     excel_path: C:/Users/yadhu/PycharmProjects/Thesis/siemensamberg_2022_64x64/siemensamberg_2022.xlsx
-  - owner: sehoaoi
+  - owner: sehoaoi  # dataset name, path of image location and excel_path for metadata
     path: C:/Users/yadhu/PycharmProjects/Thesis/sehoaoi_2021_64x64/exactInspImage/
     excel_path: C:/Users/yadhu/PycharmProjects/Thesis/sehoaoi_2021_64x64/sehoaoi_2021.xlsx
 
 
-size_x: 64
-size_y: 64
-image_feature_name: "image"
+size_x: 64  #image resolution x
+size_y: 64  #image resolution y
+image_feature_name: "image" # name of feature created for saving image data
+
+# name of columns that are not required
 column_drop: ['InspID', 'jobCenterX', 'jobCenterY', 'sizeX', 'sizeY', 'typ', 'redUsed', 'blueUsed', 'rvl',
             'bvl', 'rvh', 'bvh', 'rpl', 'bpl', 'rph', 'bph', 'ergRed', 'ergBlue', 'errTextRed', 'errTextBlue',
             'histoRed', 'histoBlue', 'inspectorName', 'errorClass', 'orgTop', 'orgLeft', 'pinName',
             'inspectorUuid', 'errorClassText', 'layerLevel', 'layerSublevel', 'cameraName', 'pseudoError',
             'imageFileName', 'inspBad', 'inspRedBad', 'inspBlueBad', 'errText', 'is_good']
 
+# name of columns of dataframe that are required for training
 column_selected:
   - errorClassCombined
   - imageIndex
   - progId
 
+# rows to be filtered
 filter_rows:
-  - column_name: errText
-    key_to_filter: Pin
+  - column_name: errText #name
+    key_to_filter: Pin #value
 
+# rows to be removed
 remove_rows:
-  - column_name: errorClassText
-    key_to_remove: AOI Gut Pruefung
+  - column_name: errorClassText #name
+    key_to_remove: AOI Gut Pruefung #value

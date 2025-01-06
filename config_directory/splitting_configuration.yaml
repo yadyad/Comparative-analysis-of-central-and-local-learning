@@ -1,5 +1,7 @@
-splitting_feature_name: progId
-min_samples_per_split: 100
-train_val_test_split_ratio: 0.2
-random_state: 42
-split_type: random
+# contains configuration of splitting between train, test and validation
+
+splitting_feature_name: progId # name of feature for splitting
+min_samples_per_split: 100  # lowest number of samples allowed in a client
+train_val_test_split_ratio: 0.2 # ratio for split between train and test
+random_state: 42  #random seed for generating random values
+split_type: random  #random, dataset or feature

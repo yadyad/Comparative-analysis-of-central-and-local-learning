@@ -1,21 +1,23 @@
-validation_size: 0.2
-test_ratio_per_client: 0.2
-random_seed: 40
-batch_size: 20
-batch_size_val: 128
-local_epochs: 2
-learning_rate: 0.01
-communication_rounds: 2
+# contains configuration of federated learning
 
-var_min_epochs: 1
-var_max_epochs: 2
-seed: 40
-var_local_epochs: True
-gmf: 0.01
-global_lr: 0.1
-learning_rate_decay_gamma: False
+validation_size: 0.2  #validation size for data
+test_ratio_per_client: 0.2  #test size for test data
+random_seed: 40 #seed to create random values
+batch_size: 20  # not used
+batch_size_val: 128 # not used
+local_epochs: 10  #number of epochs on clients
+learning_rate: 0.01 # learning rate for federated learning
+communication_rounds: 5 #number of communication rounds
 
-is_same_initial: True
+var_min_epochs: 1  # mininum variable epochs for FedNova
+var_max_epochs: 2 # Maximum variable epochs for FedNova
+seed: 40  #not used
+var_local_epochs: True  # set to true if variable local epochs is enabled in fednova
+gmf: 0.01 # server momentum for fednova
+global_lr: 0.1  # global learning rate
+learning_rate_decay_gamma: False  #learning rate scheduler for fednova is true
+
+is_same_initial: True #id true initialize client model with global model
 sample: 1   #ratio of clients sampled
 
 
